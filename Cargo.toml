@@ -1,0 +1,11 @@
+
+[package]
+name = "coursera-assignments"
+version = "0.1.0"
+
+[dependencies]
+rayon = "1.0.3"
+
+[[bin]]
+name = "knapsack"
+path = "./discrete-optimization/knapsack/solution/knapsack.rs"
