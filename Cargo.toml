@@ -9,3 +9,7 @@ rayon = "1.0.3"
 [[bin]]
 name = "knapsack"
 path = "./discrete-optimization/knapsack/solution/knapsack.rs"
+
+[[bin]]
+name = "coloring"
+path = "./discrete-optimization/coloring/solution/coloring.rs"
