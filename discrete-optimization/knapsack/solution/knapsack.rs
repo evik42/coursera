@@ -1,10 +1,8 @@
 use std::collections::HashSet;
 use std::io;
+use std::mem;
 use std::sync::Arc;
 use std::time::Instant;
-
-extern crate rayon;
-use rayon::prelude::*;
 
 macro_rules! read_line {
   () => ({
@@ -44,18 +42,21 @@ struct Artifacts<'a> {
 
 fn dynaminc_programming_memory_efficient_cols(artifacts: &Vec<Artifact>, k: i64) -> (i64, String){
   let bound = k + 1;
-  let mut prev = vec![Cell { value: 0, taken: Arc::from(Artifacts { value: None, next: None }) }; bound as usize];
+  let arr1 = vec![Cell { value: 0, taken: Arc::from(Artifacts { value: None, next: None }) }; bound as usize];
+  let arr2 = vec![Cell { value: 0, taken: Arc::from(Artifacts { value: None, next: None }) }; bound as usize];
+  let mut prev = arr1;
+  let mut cur = arr2;
   for a in artifacts {
-    let col = (0..bound).into_par_iter().map(|i| {
+    for i in 0..bound {
       let space_left = i - a.weight;
-      if space_left >= 0 && a.value + prev[space_left as usize].value > prev[i as usize].value {
+      cur[i as usize] = if space_left >= 0 && a.value + prev[space_left as usize].value > prev[i as usize].value {
         let value = a.value + prev[space_left as usize].value;
         let taken = Artifacts { value: Some(a), next: Some(prev[space_left as usize].taken.clone()) };
         Cell { value, taken: Arc::from(taken) }
       }
       else { prev[i as usize].clone() }
-    }).collect::<Vec<_>>();
-    prev = col;
+    };
+    mem::swap(&mut prev, &mut cur);
   }
   let mut arts_taken = HashSet::new();
   let mut art_taken = &prev.last().unwrap().taken;
@@ -72,7 +73,7 @@ fn main() {
   let start = Instant::now();
   let (value, result) = dynaminc_programming_memory_efficient_cols(&artifacts, k);
   let elapsed = start.elapsed();
-  eprintln!("took {}.{} sec", elapsed.as_secs(), elapsed.subsec_millis());
+  eprintln!("took {}.{:03} sec", elapsed.as_secs(), elapsed.subsec_millis());
   println!("{} 1", value);
   println!("{}", result.trim_right());
 }
